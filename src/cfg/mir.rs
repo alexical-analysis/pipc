@@ -67,6 +67,7 @@ impl Value {
     }
 }
 
+#[derive(Clone)]
 pub enum ConstValue {
     I16(i16),
     U16(u16),
@@ -79,6 +80,7 @@ pub enum Place {
     Global(Global),
 }
 
+#[derive(Clone)]
 pub enum InstValue {
     Param { index: u32 },
     Const { value: ConstValue },
@@ -155,8 +157,17 @@ impl FuncValue {
     pub fn append_block(&mut self, block: Block) {
         self.blocks.push(block)
     }
+
+    pub fn get_blocks(&self) -> &[Block] {
+        &self.blocks
+    }
+
+    pub fn param_count(&self) -> usize {
+        self.params.len()
+    }
 }
 
+#[derive(Clone)]
 pub enum Terminator {
     Return {
         value: Value,
@@ -173,7 +184,7 @@ pub enum Terminator {
     None,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Block(u32);
 
 impl Block {

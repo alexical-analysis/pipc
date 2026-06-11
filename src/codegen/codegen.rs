@@ -45,10 +45,10 @@ impl<'ctx> Gen<'ctx> {
         for &value in &block.inst {
             let inst = self.ctx.get_inst(value);
             match inst {
-                InstValue::Param { index } => todo!("what do I do with these?"),
+                InstValue::Param { .. } => todo!("params"),
                 InstValue::Const { value: v } => self.generate_const(value, v),
                 InstValue::Load { place } => self.generate_load(value, *place),
-                InstValue::Store { place, value } => todo!("store place"),
+                _ => todo!("unimplemented codegen for instruction"),
             };
         }
 

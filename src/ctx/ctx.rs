@@ -3,6 +3,7 @@ use crate::cfg::mir::{
     Block, BlockValue, Func, FuncValue, Global, GlobalValue, InstValue, Local, LocalValue,
     Terminator, Ty, Value,
 };
+use crate::isel::machine::{MachineFuncId, MachineFunc};
 
 pub struct GlobalCtx {
     locals: Vec<LocalValue>,
@@ -11,6 +12,7 @@ pub struct GlobalCtx {
     value_tys: Vec<Ty>,
     funcs: Vec<FuncValue>,
     blocks: Vec<BlockValue>,
+    machine_funcs: Vec<MachineFunc>,
 }
 
 impl GlobalCtx {
@@ -22,6 +24,7 @@ impl GlobalCtx {
             value_tys: Vec::new(),
             funcs: Vec::new(),
             blocks: Vec::new(),
+            machine_funcs: Vec::new(),
         }
     }
 
@@ -144,5 +147,23 @@ impl GlobalCtx {
 
     pub fn get_funcs(&self) -> &[FuncValue] {
         &self.funcs
+    }
+
+    pub fn get_func(&self, func: Func) -> &FuncValue {
+        self.funcs.get(func.idx()).expect("failed to find function")
+    }
+
+    pub fn get_block(&self, block: Block) -> &BlockValue {
+        self.blocks.get(block.idx()).expect("failed to find block")
+    }
+
+    pub fn add_machine_func(&mut self, mfunc: MachineFunc) -> MachineFuncId {
+        let idx = self.machine_funcs.len();
+        self.machine_funcs.push(mfunc);
+        MachineFuncId(idx as u32)
+    }
+
+    pub fn get_machine_funcs(&self) -> &[MachineFunc] {
+        &self.machine_funcs
     }
 }
