@@ -1,6 +1,7 @@
 mod cfg;
 mod codegen;
 mod ctx;
+mod emit;
 mod isel;
 mod peephole;
 mod prologue;
@@ -11,6 +12,7 @@ use clap::{Parser, Subcommand};
 use cfg::mir::Ty;
 use codegen::codegen::Gen;
 use ctx::ctx::GlobalCtx;
+use emit::emit::Emitter;
 use isel::isel::InstructionSelector;
 use peephole::peephole::run as peephole_run;
 use prologue::prologue::run as prologue_run;
@@ -66,14 +68,19 @@ fn main() {
                 let before = mf.blocks.iter().map(|b| b.insts.len()).sum::<usize>();
                 peephole_run(&mut mf);
                 let after = mf.blocks.iter().map(|b| b.insts.len()).sum::<usize>();
+
+                // Emitter is constructed inline so it drops (releasing &ctx)
+                // before the mutable add_machine_func call below.
+                let compiled = Emitter::new(&ctx).emit_func(&mf);
                 println!(
-                    "  func '{}': {} block(s), {} spill slot(s), {} inst(s) ({} fused/eliminated)",
-                    mf.name,
-                    mf.blocks.len(),
-                    num_spill_slots,
-                    after,
-                    before - after,
+                    "  func '{}': {} inst(s) ({} eliminated) → {} word(s), {} relocation(s)",
+                    mf.name, after, before - after,
+                    compiled.words.len(), compiled.relocations.len(),
                 );
+                for (i, &word) in compiled.words.iter().enumerate() {
+                    println!("    {:04X}: {:04X}", i, word);
+                }
+
                 ctx.add_machine_func(mf);
             }
         }
