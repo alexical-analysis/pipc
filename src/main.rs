@@ -2,6 +2,8 @@ mod cfg;
 mod codegen;
 mod ctx;
 mod isel;
+mod peephole;
+mod prologue;
 mod regalloc;
 
 use clap::{Parser, Subcommand};
@@ -10,6 +12,8 @@ use cfg::mir::Ty;
 use codegen::codegen::Gen;
 use ctx::ctx::GlobalCtx;
 use isel::isel::InstructionSelector;
+use peephole::peephole::run as peephole_run;
+use prologue::prologue::run as prologue_run;
 use regalloc::regalloc::run as regalloc_run;
 
 #[derive(Parser)]
@@ -58,11 +62,17 @@ fn main() {
             println!("instruction selection produced {} function(s)", machine_funcs.len());
             for mut mf in machine_funcs {
                 let num_spill_slots = regalloc_run(&mut mf);
+                prologue_run(&mut mf, num_spill_slots);
+                let before = mf.blocks.iter().map(|b| b.insts.len()).sum::<usize>();
+                peephole_run(&mut mf);
+                let after = mf.blocks.iter().map(|b| b.insts.len()).sum::<usize>();
                 println!(
-                    "  func '{}': {} block(s), {} spill slot(s)",
+                    "  func '{}': {} block(s), {} spill slot(s), {} inst(s) ({} fused/eliminated)",
                     mf.name,
                     mf.blocks.len(),
                     num_spill_slots,
+                    after,
+                    before - after,
                 );
                 ctx.add_machine_func(mf);
             }
