@@ -1,12 +1,14 @@
 mod cfg;
 mod codegen;
 mod ctx;
+mod isel;
 
 use clap::{Parser, Subcommand};
 
 use cfg::mir::Ty;
 use codegen::codegen::Gen;
 use ctx::ctx::GlobalCtx;
+use isel::isel::InstructionSelector;
 
 #[derive(Parser)]
 #[command(
@@ -48,7 +50,13 @@ fn main() {
             let sum = builder.build_add(x, y);
             builder.build_return_value(sum);
 
-            let codegen = Gen::new(&ctx);
+            let _codegen = Gen::new(&ctx);
+
+            let machine_funcs = InstructionSelector::new(&ctx).run();
+            println!("instruction selection produced {} function(s)", machine_funcs.len());
+            for mf in machine_funcs {
+                ctx.add_machine_func(mf);
+            }
         }
     }
 }
