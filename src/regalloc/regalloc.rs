@@ -41,7 +41,15 @@ pub fn run(mfunc: &mut MachineFunc) -> u32 {
 fn linear_scan(
     intervals: &mut Vec<LiveInterval>,
 ) -> (HashMap<VReg, VReg>, HashMap<VReg, u32>, u32) {
-    intervals.sort_by_key(|i| i.start);
+    // Sort by start; break ties by placing pre-colored intervals first so their
+    // physical registers are blocked before virtuals are allocated at the same point.
+    intervals.sort_by(|a, b| {
+        a.start.cmp(&b.start).then_with(|| {
+            let a_pre = a.vreg.0 < FIRST_VIRTUAL;
+            let b_pre = b.vreg.0 < FIRST_VIRTUAL;
+            b_pre.cmp(&a_pre)
+        })
+    });
 
     let mut free_regs: Vec<VReg> = ALLOCATABLE.to_vec();
     // active is kept sorted by end point (shortest end first) for O(n) eviction.
