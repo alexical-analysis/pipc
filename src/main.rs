@@ -2,6 +2,7 @@ mod cfg;
 mod codegen;
 mod ctx;
 mod isel;
+mod regalloc;
 
 use clap::{Parser, Subcommand};
 
@@ -9,6 +10,7 @@ use cfg::mir::Ty;
 use codegen::codegen::Gen;
 use ctx::ctx::GlobalCtx;
 use isel::isel::InstructionSelector;
+use regalloc::regalloc::run as regalloc_run;
 
 #[derive(Parser)]
 #[command(
@@ -54,7 +56,14 @@ fn main() {
 
             let machine_funcs = InstructionSelector::new(&ctx).run();
             println!("instruction selection produced {} function(s)", machine_funcs.len());
-            for mf in machine_funcs {
+            for mut mf in machine_funcs {
+                let num_spill_slots = regalloc_run(&mut mf);
+                println!(
+                    "  func '{}': {} block(s), {} spill slot(s)",
+                    mf.name,
+                    mf.blocks.len(),
+                    num_spill_slots,
+                );
                 ctx.add_machine_func(mf);
             }
         }

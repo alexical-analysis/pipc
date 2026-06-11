@@ -127,6 +127,16 @@ pub enum MachineInst {
     SetUlt { dst: VReg, lhs: VReg, rhs: VReg },
     SetSgt { dst: VReg, lhs: VReg, rhs: VReg },
     SetUgt { dst: VReg, lhs: VReg, rhs: VReg },
+
+    // ── Spill pseudos (inserted by the register allocator) ───────────────────
+
+    /// Load from a numbered spill slot. Converted to Lw with the correct
+    /// FP-relative offset by the prologue/epilogue pass.
+    SpillLoad { dst: VReg, slot: u32 },
+
+    /// Store to a numbered spill slot. Converted to Sw with the correct
+    /// FP-relative offset by the prologue/epilogue pass.
+    SpillStore { slot: u32, src: VReg },
 }
 
 pub struct MachineBlock {
