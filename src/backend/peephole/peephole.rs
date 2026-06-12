@@ -1,4 +1,4 @@
-use crate::isel::machine::{MachineFunc, MachineInst, MachineBlockId, VReg, phys};
+use crate::backend::isel::machine::{MachineFunc, MachineInst, MachineBlockId, VReg, phys};
 
 /// Run all peephole optimizations over every block in `mfunc`.
 ///

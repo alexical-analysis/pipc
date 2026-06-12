@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::isel::machine::{MachineFunc, MachineInst, VReg, phys};
+use crate::backend::isel::machine::{MachineFunc, MachineInst, VReg, phys};
 
 #[derive(Clone, Debug)]
 pub struct LiveInterval {

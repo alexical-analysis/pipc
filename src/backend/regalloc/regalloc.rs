@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::isel::machine::{MachineFunc, MachineInst, VReg, phys, FIRST_VIRTUAL};
+use crate::backend::isel::machine::{MachineFunc, MachineInst, VReg, phys, FIRST_VIRTUAL};
 
 use super::liveness::{LiveInterval, compute_intervals, inst_defs, inst_uses};
 

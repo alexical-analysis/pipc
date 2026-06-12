@@ -1,6 +1,6 @@
 use crate::{
+    backend::isel::machine::{MachineFunc, MachineInst, VReg},
     ctx::ctx::GlobalCtx,
-    isel::machine::{MachineFunc, MachineInst, VReg},
 };
 
 /// r12 is the dedicated address-scratch register for branch expansion.

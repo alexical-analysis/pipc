@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::emit::emit::{CompiledFunc, RelocKind};
+use crate::backend::emit::emit::{CompiledFunc, RelocKind};
 
 /// Single-pass linker for pip16 ROM images.
 ///
