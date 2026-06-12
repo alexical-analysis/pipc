@@ -1,4 +1,4 @@
-use crate::isel::machine::{MachineBlock, MachineFunc, MachineInst, VReg, phys};
+use crate::backend::isel::machine::{MachineBlock, MachineFunc, MachineInst, VReg, phys};
 
 /// Scratch register used in the prologue to load the frame size into a register
 /// before subtracting it from SP. r12 is caller-saved and free at function entry.

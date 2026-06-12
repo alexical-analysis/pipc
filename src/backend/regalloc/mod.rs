@@ -1,2 +1,2 @@
-pub mod liveness;
+mod liveness;
 pub mod regalloc;

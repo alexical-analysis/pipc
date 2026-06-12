@@ -1,24 +1,11 @@
+mod backend;
 mod cfg;
-mod codegen;
 mod ctx;
-mod emit;
-mod isel;
-mod link;
-mod peephole;
-mod prologue;
-mod regalloc;
 
 use clap::{Parser, Subcommand};
 
 use cfg::mir::Ty;
-use codegen::codegen::Gen;
 use ctx::ctx::GlobalCtx;
-use emit::emit::Emitter;
-use isel::isel::InstructionSelector;
-use link::link::Linker;
-use peephole::peephole::run as peephole_run;
-use prologue::prologue::run as prologue_run;
-use regalloc::regalloc::run as regalloc_run;
 
 #[derive(Parser)]
 #[command(
@@ -60,34 +47,7 @@ fn main() {
             let sum = builder.build_add(x, y);
             builder.build_return_value(sum);
 
-            let _codegen = Gen::new(&ctx);
-
-            let machine_funcs = InstructionSelector::new(&ctx).run();
-            println!("instruction selection produced {} function(s)", machine_funcs.len());
-
-            let mut linker = Linker::new();
-
-            for mut mf in machine_funcs {
-                let num_spill_slots = regalloc_run(&mut mf);
-                prologue_run(&mut mf, num_spill_slots);
-                let before = mf.blocks.iter().map(|b| b.insts.len()).sum::<usize>();
-                peephole_run(&mut mf);
-                let after = mf.blocks.iter().map(|b| b.insts.len()).sum::<usize>();
-
-                // Emitter borrows &ctx immutably; it drops before the mutable
-                // add_machine_func call below.
-                let compiled = Emitter::new(&ctx).emit_func(&mf);
-                println!(
-                    "  func '{}': {} inst(s) ({} eliminated) → {} word(s), {} relocation(s)",
-                    mf.name, after, before - after,
-                    compiled.words.len(), compiled.relocations.len(),
-                );
-
-                linker.add(compiled);
-                ctx.add_machine_func(mf);
-            }
-
-            let rom = linker.link();
+            let rom = backend::compile(&ctx);
             println!("linked ROM: {} word(s) ({} bytes)", rom.len(), rom.len() * 2);
             for (chunk_idx, chunk) in rom.chunks(8).enumerate() {
                 let hex: Vec<String> = chunk.iter().map(|w| format!("{:04X}", w)).collect();
